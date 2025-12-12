@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #EDE7F6;
+  --foreground: #2D2D2D;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #1a0b2e;
+    /* Deep purple dark mode */
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-poppins), sans-serif;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-fredoka), sans-serif;
+}
+
+/* Custom Utilities */
+.text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(to right, #9D4EDD, #FF99C8);
+}
+
+.text-gradient-gold {
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(to right, #FFC8DD, #E0AAFF);
+}
+
+.glow-hover {
+  transition: all 0.3s ease;
+}
+
+.glow-hover:hover {
+  box-shadow: 0 0 20px rgba(157, 78, 221, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Increase Clerk UserButton size */
+.cl-userButtonTrigger {
+  width: 40px !important;
+  height: 40px !important;
+}
+
+.cl-userButtonAvatarBox {
+  width: 40px !important;
+  height: 40px !important;
+}
