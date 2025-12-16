@@ -9,17 +9,16 @@ export default function Footer() {
 
                     {/* Brand */}
                     <div className="col-span-1 md:col-span-2 lg:col-span-1">
-                        <Link href="/" className="flex items-center gap-2 mb-4 group">
-                            <div className="w-10 h-10 relative transform group-hover:scale-105 transition-transform duration-300 bg-transparent rounded-xl border-2 border-white/30">
+                        <Link href="/" className="flex items-center mb-4 group">
+                            <div className="relative transform group-hover:scale-105 transition-transform duration-300">
                                 <Image
-                                    src="/images/storynest-logo.png"
+                                    src="/images/storynest-logo-cursive.png"
                                     alt="StoryNest Logo"
-                                    width={40}
-                                    height={40}
-                                    className="w-full h-full object-contain"
+                                    width={350}
+                                    height={120}
+                                    className="h-32 w-auto object-contain brightness-0 invert -my-6"
                                 />
                             </div>
-                            <span className="text-xl font-bold font-fredoka text-white">StoryNest AI</span>
                         </Link>
                         <p className="text-white mb-6 font-poppins">
                             Where imagination becomes a story. Creating magical moments for families everywhere.

@@ -193,7 +193,7 @@ export default function ContactPage() {
                                     <label htmlFor="message" className="block text-sm font-semibold text-gray-700">Message</label>
                                     <textarea
                                         id="message"
-                                        rows={4}
+                                        rows={8}
                                         value={formData.message}
                                         onChange={handleChange}
                                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-story-purple focus:ring-2 focus:ring-story-purple/20 outline-none transition-all resize-none"

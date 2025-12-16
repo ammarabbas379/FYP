@@ -1,6 +1,7 @@
 "use client";
 
 import Link from 'next/link';
+
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
@@ -27,19 +28,16 @@ export default function Header() {
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2 group">
-                        <div className="w-12 h-12 relative transform group-hover:scale-105 transition-transform duration-300 bg-transparent rounded-xl border-2 border-purple-200/50">
+                    <Link href="/" className="flex items-center group">
+                        <div className="relative transform group-hover:scale-105 transition-transform duration-300">
                             <Image
-                                src="/images/storynest-logo.png"
+                                src="/images/storynest-logo-cursive.png"
                                 alt="StoryNest Logo"
-                                width={48}
-                                height={48}
-                                className="w-full h-full object-contain"
+                                width={350}
+                                height={120}
+                                className="h-32 w-auto object-contain -my-10"
                             />
                         </div>
-                        <span className="text-2xl font-bold font-fredoka text-story-purple tracking-wide">
-                            StoryNest AI
-                        </span>
                     </Link>
 
                     {/* Desktop Navigation */}
