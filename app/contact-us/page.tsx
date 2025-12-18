@@ -155,7 +155,7 @@ export default function ContactPage() {
                                             value={formData.lastName}
                                             onChange={handleChange}
                                             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-story-purple focus:ring-2 focus:ring-story-purple/20 outline-none transition-all"
-                                            placeholder="Doe"
+                                            placeholder="Goodfairy"
                                             required
                                         />
                                     </div>
