@@ -12,19 +12,19 @@ export default {
         background: "var(--background)",
         foreground: "var(--foreground)",
         story: {
-          purple: "#9D4EDD", // Darker purple for contrast
-          'purple-light': "#E0AAFF",
-          pink: "#FF99C8",
-          blue: "#A2D2FF",
-          gold: "#FFC8DD", // Using a soft pink-gold
-          gold2: "#FDE2E4",
-          lavender: "#E6E0F5", // Slightly darker lavender for better contrast
+          purple: "#9D4EDD",         // Main brand color: buttons, text highlights, navigation, and feature icons
+          'purple-light': "#E0AAFF", // Soft background accents and decorative elements
+          pink: "#FF99C8",           // Secondary brand color: hover states, icons, and CTA accents
+          blue: "#A2D2FF",           // Decorative highlights and alternative icon colors
+          gold: "#FFC8DD",           // Premium highlights: sparkles, special buttons, and magical effects
+          gold2: "#FDE2E4",          // Soft background gradients and decorative section fills
+          lavender: "#E6E0F5",       // Primary background color for pages and layouts
         }
       },
       fontFamily: {
         fredoka: ["var(--font-fredoka)", "sans-serif"],
         poppins: ["var(--font-poppins)", "sans-serif"],
-        quicksand: ["var(--font-quicksand)", "sans-serif"],
+
       },
       keyframes: {
         float: {

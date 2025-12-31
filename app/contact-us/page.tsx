@@ -1,4 +1,4 @@
-'use client';
+'use client'; // Interaction (like typing in the form) happens here
 
 import Link from 'next/link';
 import Image from 'next/image';
@@ -6,7 +6,9 @@ import { useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
+// This is the Contact Us page where users can send messages to the team
 export default function ContactPage() {
+    // This stores what the user types into the form
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -14,19 +16,24 @@ export default function ContactPage() {
         subject: 'General Inquiry',
         message: ''
     });
+
+    // These keep track of if the message is sending and if it was successful
     const [status, setStatus] = useState({ type: '', message: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Updates the formData state whenever the user types something
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.id]: e.target.value });
     };
 
+    // This runs when the user clicks the "Send Message" button
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+        e.preventDefault(); // Stop the page from refreshing
         setIsSubmitting(true);
         setStatus({ type: '', message: '' });
 
         try {
+            // Send the form data to our server API
             const res = await fetch('/api/contact', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -36,6 +43,7 @@ export default function ContactPage() {
             const data = await res.json();
 
             if (res.ok) {
+                // If everything went well, show a success message and clear the form
                 setStatus({ type: 'success', message: 'Message sent successfully!' });
                 setFormData({
                     firstName: '',
@@ -45,12 +53,13 @@ export default function ContactPage() {
                     message: ''
                 });
             } else {
+                // If there was an error, show it to the user
                 setStatus({ type: 'error', message: data.error || 'Something went wrong.' });
             }
         } catch (err) {
             setStatus({ type: 'error', message: 'Failed to send message.' });
         } finally {
-            setIsSubmitting(false);
+            setIsSubmitting(false); // Stop the "Sending..." loading state
         }
     };
 
@@ -59,13 +68,9 @@ export default function ContactPage() {
             <Header />
 
             <main className="flex-grow pt-28 pb-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-                {/* Background Elements */}
-
-                {/* Gradient Blob 1 */}
+                {/* Background decorative blobs */}
                 <div className="absolute top-20 left-0 w-96 h-96 bg-story-purple rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-                {/* Gradient Blob 2 */}
                 <div className="absolute top-20 right-0 w-96 h-96 bg-story-gold rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-                {/* Gradient Blob 3 */}
                 <div className="absolute -bottom-32 left-20 w-96 h-96 bg-story-pink rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
 
                 <div className="container mx-auto relative z-10 max-w-6xl">
@@ -80,9 +85,8 @@ export default function ContactPage() {
                     </div>
 
                     <div className="grid lg:grid-cols-2 gap-12">
-                        {/* Contact Info Card */}
+                        {/* Left Side: Contact Info and an Image */}
                         <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-purple-100 animate-fade-in-up h-full flex flex-col justify-between">
-
                             <h2 className="text-2xl font-bold font-fredoka text-gray-800 mb-6">
                                 Contact Information
                             </h2>
@@ -101,11 +105,9 @@ export default function ContactPage() {
                                         </a>
                                     </div>
                                 </div>
-
-
-
                             </div>
 
+                            {/* A friendly illustration image */}
                             <div className="mt-8 rounded-2xl overflow-hidden shadow-lg border-4 border-white transform hover:scale-[1.02] transition-transform duration-300 w-full">
                                 <Image
                                     src="/images/magic-contact-kid.jpg"
@@ -115,18 +117,15 @@ export default function ContactPage() {
                                     className="w-full h-auto object-cover"
                                 />
                             </div>
-
-
                         </div>
 
-                        {/* Contact Form */}
+                        {/* Right Side: The actual form the user fills out */}
                         <div className="bg-white rounded-3xl p-8 shadow-xl border border-purple-100 animate-fade-in-up relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-story-gold/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
-
                             <h2 className="text-2xl font-bold font-fredoka text-gray-800 mb-6 relative z-10">
                                 Send us a Message
                             </h2>
 
+                            {/* Success or Error messages shown after clicking Send */}
                             {status.message && (
                                 <div className={`relative z-10 mb-6 p-4 rounded-xl ${status.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
                                     {status.message}
@@ -183,7 +182,6 @@ export default function ContactPage() {
                                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-story-purple focus:ring-2 focus:ring-story-purple/20 outline-none transition-all bg-white"
                                     >
                                         <option>General Inquiry</option>
-
                                         <option>Partnership</option>
                                         <option>Feedback</option>
                                     </select>
@@ -202,6 +200,7 @@ export default function ContactPage() {
                                     ></textarea>
                                 </div>
 
+                                {/* The Submit Button */}
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}

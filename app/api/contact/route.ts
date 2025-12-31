@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
+import nodemailer from 'nodemailer'; // Nodemailer is a tool used to send emails from code
 
+// This function handles "POST" requests (sending information) to this API route
 export async function POST(req: Request) {
     try {
+        // Read the information sent from the contact form
         const body = await req.json();
         const { firstName, lastName, email, subject, message } = body;
 
-        // Validation
+        // Step 1: Check if any part of the form is empty
         if (!firstName || !lastName || !email || !subject || !message) {
             return NextResponse.json(
                 { error: 'Missing required fields' },
@@ -14,30 +16,29 @@ export async function POST(req: Request) {
             );
         }
 
-        // Manual env loading fallback
+        // Step 2: Get our email credentials (email address and special app password)
+        // These are stored in a hidden file (.env.local) for security
         let contactEmail = process.env.CONTACT_EMAIL;
         let contactPassword = process.env.CONTACT_PASSWORD;
 
+        // If the system can't find them normally, we try to find the hidden file manually
         if (!contactEmail || !contactPassword) {
             console.log('Env vars missing from process.env, attempting manual load...');
-            console.log('Current working directory:', process.cwd());
 
             try {
                 const fs = await import('fs');
                 const path = await import('path');
 
-                // Try multiple possible paths for .env.local
+                // Look for the .env.local file in different places
                 const possiblePaths = [
                     path.resolve(process.cwd(), '.env.local'),
                     path.resolve(process.cwd(), 'story-ai', 'app', '.env.local'),
                     path.resolve(process.cwd(), 'app', '.env.local'),
-                    'c:\\Users\\walee\\story-ai\\app\\.env.local' // Absolute fallback
+                    'c:\\Users\\walee\\story-ai\\app\\.env.local'
                 ];
 
                 for (const envPath of possiblePaths) {
-                    console.log('Checking path:', envPath);
                     if (fs.existsSync(envPath)) {
-                        console.log('Found .env.local at:', envPath);
                         const envFile = fs.readFileSync(envPath, 'utf-8');
                         const lines = envFile.split('\n');
                         for (const line of lines) {
@@ -48,7 +49,7 @@ export async function POST(req: Request) {
                             if (key && valueParts.length > 0) {
                                 const cleanKey = key.trim();
                                 let cleanValue = valueParts.join('=').trim();
-                                // Remove quotes if present
+                                // Clean up the text if it has quotes around it
                                 if ((cleanValue.startsWith('"') && cleanValue.endsWith('"')) ||
                                     (cleanValue.startsWith("'") && cleanValue.endsWith("'"))) {
                                     cleanValue = cleanValue.slice(1, -1);
@@ -58,7 +59,6 @@ export async function POST(req: Request) {
                                 if (cleanKey === 'CONTACT_PASSWORD') contactPassword = cleanValue;
                             }
                         }
-                        // If we found the file and parsed it, stop searching
                         if (contactEmail && contactPassword) break;
                     }
                 }
@@ -67,9 +67,7 @@ export async function POST(req: Request) {
             }
         }
 
-        console.log('Final CONTACT_EMAIL:', contactEmail);
-        console.log('Final CONTACT_PASSWORD:', contactPassword ? '******' : 'MISSING');
-
+        // Step 3: Stop if we still can't find the email setup info
         if (!contactEmail || !contactPassword) {
             return NextResponse.json(
                 { error: 'Sorry!!! Try Again' },
@@ -77,7 +75,7 @@ export async function POST(req: Request) {
             );
         }
 
-        // Configure Nodemailer transporter
+        // Step 4: Set up the official "mailing service" (using Gmail)
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             secure: true,
@@ -87,10 +85,10 @@ export async function POST(req: Request) {
             },
         });
 
-        // Email content
+        // Step 5: Design how the email looks when it arrives in your inbox
         const mailOptions = {
             from: contactEmail,
-            to: contactEmail, // Sending to admin
+            to: contactEmail, // The message is sent TO you
             subject: `New Message - ${subject}`,
             html: `
                 <h3>New Contact Form Submission</h3>
@@ -103,9 +101,10 @@ export async function POST(req: Request) {
             `,
         };
 
-        // Send email
+        // Step 6: Actually send the email
         await transporter.sendMail(mailOptions);
 
+        // Tell the user "Successfully Sent!"
         return NextResponse.json(
             { success: true, message: 'Message sent!' },
             { status: 200 }

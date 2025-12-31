@@ -1,15 +1,16 @@
-"use client";
+"use client"; // This tells Next.js that this component has interactive parts (like buttons or scroll effects)
 
-import Link from 'next/link';
-
-import Image from 'next/image';
-import { useState, useEffect } from 'react';
-import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
+import Link from 'next/link'; // For jumping to different pages
+import Image from 'next/image'; // For high-quality images
+import { useState, useEffect } from 'react'; // For keeping track of things (like if the user scrolled)
+import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'; // User login tools
 
 export default function Header() {
+    // These states keep track of whether the page is scrolled and if the mobile menu is open
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+    // This runs when the page is scrolled to change the header's look
     useEffect(() => {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 10);
@@ -21,13 +22,14 @@ export default function Header() {
     return (
         <header
             className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-                ? 'bg-white/95 backdrop-blur-md shadow-md py-2'
-                : 'bg-white/30 backdrop-blur-sm py-4 border-b border-white/20'
+                ? 'bg-white/95 backdrop-blur-md shadow-md py-2' // Smaller and semi-see-through when scrolled
+                : 'bg-white/30 backdrop-blur-sm py-4 border-b border-white/20' // Airy and light at the top
                 }`}
         >
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between">
-                    {/* Logo */}
+
+                    {/* The StoryNest Logo - clicking it takes you back Home */}
                     <Link href="/" className="flex items-center group">
                         <div className="relative transform group-hover:scale-105 transition-transform duration-300">
                             <Image
@@ -40,7 +42,7 @@ export default function Header() {
                         </div>
                     </Link>
 
-                    {/* Desktop Navigation */}
+                    {/* Desktop Navigation Links (shown only on bigger screens) */}
                     <nav className="hidden md:flex items-center gap-8">
                         {['Home', 'Create Story', 'Explore Stories', 'Contact Us'].map((item) => (
                             <Link
@@ -49,14 +51,16 @@ export default function Header() {
                                 className="font-medium text-gray-600 hover:text-story-purple transition-colors relative group"
                             >
                                 {item}
+                                {/* The little line that appears under the link when you hover */}
                                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-story-purple transition-all group-hover:w-full rounded-full"></span>
                             </Link>
                         ))}
                     </nav>
 
-                    {/* Desktop Auth Buttons */}
+                    {/* Desktop Login Buttons */}
                     <div className="hidden md:block">
                         <SignedOut>
+                            {/* Shown when the user is NOT logged in */}
                             <SignInButton mode="modal">
                                 <button className="bg-story-purple hover:bg-purple-700 text-white font-bold py-2.5 px-6 rounded-full shadow-lg shadow-purple-200 hover:shadow-purple-400 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
                                     Get Started
@@ -64,11 +68,12 @@ export default function Header() {
                             </SignInButton>
                         </SignedOut>
                         <SignedIn>
+                            {/* Shown when the user IS logged in */}
                             <UserButton afterSignOutUrl="/" />
                         </SignedIn>
                     </div>
 
-                    {/* Mobile Auth & Menu */}
+                    {/* Mobile Menu Button (shown only on small screens) */}
                     <div className="md:hidden flex items-center gap-3">
                         <button
                             className="p-2 text-gray-600"
@@ -89,7 +94,7 @@ export default function Header() {
                     </div>
                 </div>
 
-                {/* Mobile Menu */}
+                {/* Mobile Menu dropdown */}
                 {isMobileMenuOpen && (
                     <div className="md:hidden absolute top-full left-0 right-0 bg-white border-t p-4 shadow-lg flex flex-col gap-4 animate-fade-in-up">
                         {['Home', 'Create Story', 'Explore Stories', 'Contact Us'].map((item) => (

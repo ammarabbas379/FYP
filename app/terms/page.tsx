@@ -1,21 +1,22 @@
-'use client';
+'use client'; // This page needs to work with the navigational menu
 
 import Link from 'next/link';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
+// This page explains the legal rules for using the StoryNest website
 export default function TermsPage() {
     return (
         <div className="min-h-screen font-poppins bg-story-lavender flex flex-col">
             <Header />
 
             <main className="flex-grow pt-28 pb-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-                {/* Background Elements */}
+                {/* Decorative background blobs to keep the theme magical */}
                 <div className="absolute top-20 left-0 w-96 h-96 bg-story-purple rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
                 <div className="absolute top-20 right-0 w-96 h-96 bg-story-gold rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
 
                 <div className="container mx-auto relative z-10 max-w-4xl">
-                    {/* Page Header */}
+                    {/* Page Title */}
                     <div className="text-center mb-12 animate-fade-in-up">
                         <h1 className="text-4xl md:text-5xl font-bold font-fredoka text-story-purple mb-4">
                             Terms of Service
@@ -25,10 +26,11 @@ export default function TermsPage() {
                         </p>
                     </div>
 
-                    {/* Terms Content */}
+                    {/* The main box containing all the rules/terms */}
                     <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 md:p-12 shadow-xl border border-purple-100 animate-fade-in-up">
                         <div className="prose prose-lg max-w-none">
 
+                            {/* Section 1: Introduction */}
                             <section className="mb-8">
                                 <h2 className="text-2xl font-bold font-fredoka text-gray-900 mb-4">1. Acceptance of Terms</h2>
                                 <p className="text-gray-700 leading-relaxed mb-4">
@@ -36,6 +38,7 @@ export default function TermsPage() {
                                 </p>
                             </section>
 
+                            {/* Section 2: What is StoryNest */}
                             <section className="mb-8">
                                 <h2 className="text-2xl font-bold font-fredoka text-gray-900 mb-4">2. Description of Service</h2>
                                 <p className="text-gray-700 leading-relaxed mb-4">
@@ -43,18 +46,20 @@ export default function TermsPage() {
                                 </p>
                             </section>
 
+                            {/* Section 3: Rules for User Accounts */}
                             <section className="mb-8">
                                 <h2 className="text-2xl font-bold font-fredoka text-gray-900 mb-4">3. User Accounts</h2>
                                 <p className="text-gray-700 leading-relaxed mb-4">
                                     To access certain features of the Service, you may be required to create an account. You are responsible for:
                                 </p>
                                 <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
-                                    <li>Maintaining the confidentiality of your account credentials</li>
-                                    <li>All activities that occur under your account</li>
-                                    <li>Notifying us immediately of any unauthorized use</li>
+                                    <li>Keeping your login information safe</li>
+                                    <li>Everything that happens while you are logged in</li>
+                                    <li>Telling us if someone else gets into your account</li>
                                 </ul>
                             </section>
 
+                            {/* Section 4: Who owns the stories */}
                             <section className="mb-8">
                                 <h2 className="text-2xl font-bold font-fredoka text-gray-900 mb-4">4. Content Ownership</h2>
                                 <p className="text-gray-700 leading-relaxed mb-4">
@@ -62,19 +67,21 @@ export default function TermsPage() {
                                 </p>
                             </section>
 
+                            {/* Section 5: What you are not allowed to do */}
                             <section className="mb-8">
                                 <h2 className="text-2xl font-bold font-fredoka text-gray-900 mb-4">5. Acceptable Use</h2>
                                 <p className="text-gray-700 leading-relaxed mb-4">
                                     You agree not to use the Service to:
                                 </p>
                                 <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
-                                    <li>Create content that is harmful, offensive, or inappropriate for children</li>
-                                    <li>Violate any applicable laws or regulations</li>
-                                    <li>Infringe on the intellectual property rights of others</li>
-                                    <li>Attempt to gain unauthorized access to the Service or its systems</li>
+                                    <li>Create stories that are mean, scary, or bad for children</li>
+                                    <li>Break any laws</li>
+                                    <li>Steal ideas from others</li>
+                                    <li>Try to hack or break the website</li>
                                 </ul>
                             </section>
 
+                            {/* Section 6: Privacy information */}
                             <section className="mb-8">
                                 <h2 className="text-2xl font-bold font-fredoka text-gray-900 mb-4">6. Privacy</h2>
                                 <p className="text-gray-700 leading-relaxed mb-4">
@@ -82,6 +89,7 @@ export default function TermsPage() {
                                 </p>
                             </section>
 
+                            {/* Section 7: Legal limits */}
                             <section className="mb-8">
                                 <h2 className="text-2xl font-bold font-fredoka text-gray-900 mb-4">7. Limitation of Liability</h2>
                                 <p className="text-gray-700 leading-relaxed mb-4">
@@ -89,6 +97,7 @@ export default function TermsPage() {
                                 </p>
                             </section>
 
+                            {/* Section 8: Updating these rules */}
                             <section className="mb-8">
                                 <h2 className="text-2xl font-bold font-fredoka text-gray-900 mb-4">8. Changes to Terms</h2>
                                 <p className="text-gray-700 leading-relaxed mb-4">
@@ -96,6 +105,7 @@ export default function TermsPage() {
                                 </p>
                             </section>
 
+                            {/* Section 9: How to ask questions */}
                             <section className="mb-8">
                                 <h2 className="text-2xl font-bold font-fredoka text-gray-900 mb-4">9. Contact Us</h2>
                                 <p className="text-gray-700 leading-relaxed mb-4">

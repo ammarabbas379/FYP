@@ -1,17 +1,20 @@
-"use client";
+"use client"; // This page has many interactive buttons and choices
 
 import { useState } from 'react';
 import Link from 'next/link';
-import Image, { StaticImageData } from 'next/image';
+import Image from 'next/image';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
 
+// This is the main page where users customize and create their story
 export default function CreateStoryPage() {
+    // These states keep track of what the user clicks on (Story type, Age, and Art style)
     const [storyType, setStoryType] = useState<string>('story-book');
     const [ageGroup, setAgeGroup] = useState<string>('3-5');
     const [imageStyle, setImageStyle] = useState<string>('3d-cartoon');
 
+    // These lists define the different choices the user can make
     const storyTypes = [
         { id: 'story-book', label: 'Story Book', color: 'from-purple-500 to-indigo-600', image: '/images/story-book-cover.jpg' },
         { id: 'bed-story', label: 'Bed Story', color: 'from-blue-400 to-cyan-500', image: '/images/bed-story.jpg' },
@@ -34,9 +37,11 @@ export default function CreateStoryPage() {
         <div className="min-h-screen font-poppins bg-story-lavender">
             <Header />
             <main className="pt-24 pb-20 px-4 sm:px-6 lg:px-8">
+
+                {/* Section only visible if the user IS logged in */}
                 <SignedIn>
                     <div className="max-w-6xl mx-auto">
-                        {/* Header Section */}
+                        {/* Title of the page */}
                         <div className="text-center mb-12 animate-fade-in-up">
                             <h1 className="text-4xl sm:text-5xl font-bold font-fredoka text-gray-900 mb-4">
                                 Create Your <span className="text-story-purple">Magic Story</span> 📖
@@ -46,9 +51,9 @@ export default function CreateStoryPage() {
                             </p>
                         </div>
 
-                        {/* Top Section Grid: Subject (Left) and Story Type (Right) */}
+                        {/* Top Choices Grid: Subject and Story Type */}
                         <div className="grid lg:grid-cols-12 gap-8 mb-12">
-                            {/* Story Input - Left Side (Col Span 5) */}
+                            {/* 1. The input box where users type their story idea */}
                             <div className="lg:col-span-5 bg-white rounded-3xl p-8 shadow-xl animate-fade-in-up animation-delay-100 flex flex-col h-full min-h-[400px]">
                                 <label className="block text-2xl font-bold font-fredoka text-gray-800 mb-6">
                                     1. Subject of the Story
@@ -57,12 +62,9 @@ export default function CreateStoryPage() {
                                     className="w-full h-full p-6 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-story-purple focus:ring-4 focus:ring-purple-100 transition-all text-lg resize-none placeholder-gray-400 outline-none flex-grow"
                                     placeholder="Write the subject of the story you want to generate..."
                                 ></textarea>
-                                <div className="text-right mt-2 text-gray-400 text-sm">
-                                    <svg className="w-4 h-4 inline-block ml-auto" fill="currentColor" viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" /></svg>
-                                </div>
                             </div>
 
-                            {/* Story Type - Right Side (Col Span 7) */}
+                            {/* 2. Selecting what kind of story it is */}
                             <div className="lg:col-span-7 animate-fade-in-up animation-delay-200">
                                 <label className="block text-2xl font-bold font-fredoka text-gray-800 mb-6">
                                     2. Story Type
@@ -77,31 +79,22 @@ export default function CreateStoryPage() {
                                                 : 'hover:shadow-lg hover:scale-[1.02]'
                                                 }`}
                                         >
-                                            {/* Background Image / Placeholder */}
-                                            {type.image ? (
+                                            {/* Preview image for the story type */}
+                                            {type.image && (
                                                 <Image
                                                     src={type.image}
                                                     alt={type.label}
                                                     fill
                                                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                                                 />
-                                            ) : (
-                                                <div className={`absolute inset-0 bg-gradient-to-br ${type.color} transition-transform duration-500 group-hover:scale-110`}>
-
-                                                </div>
                                             )}
-
-                                            {/* Gradient Overlay for Text */}
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-                                            {/* Label */}
                                             <div className="absolute bottom-4 left-0 right-0 text-center">
                                                 <span className="text-xl font-bold text-white font-fredoka drop-shadow-md">
                                                     {type.label}
                                                 </span>
                                             </div>
-
-                                            {/* Selection Indicator (Icon) */}
+                                            {/* Small animated checkmark when selected */}
                                             {storyType === type.id && (
                                                 <div className="absolute top-3 right-3 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white shadow-lg animate-bounce-short">
                                                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -115,9 +108,9 @@ export default function CreateStoryPage() {
                             </div>
                         </div>
 
-                        {/* Selections Grid for remaining items: Age Group and Image Style side-by-side */}
+                        {/* Middle Choices Grid: Age Group and Art Style */}
                         <div className="grid lg:grid-cols-12 gap-8 mb-12">
-                            {/* Age Group */}
+                            {/* 3. Selecting the Age Group */}
                             <div className="lg:col-span-7 animate-fade-in-up animation-delay-300">
                                 <label className="block text-2xl font-bold font-fredoka text-gray-800 mb-6">
                                     3. Age Group
@@ -132,18 +125,13 @@ export default function CreateStoryPage() {
                                                 : 'hover:shadow-lg hover:scale-[1.02]'
                                                 }`}
                                         >
-                                            {/* Background Image / Placeholder */}
-                                            {age.image ? (
+                                            {age.image && (
                                                 <Image
                                                     src={age.image}
                                                     alt={age.label}
                                                     fill
                                                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                                                 />
-                                            ) : (
-                                                <div className={`absolute inset-0 bg-gradient-to-br ${age.color || 'from-gray-300 to-gray-400'} transition-transform duration-500 group-hover:scale-110`}>
-
-                                                </div>
                                             )}
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                                             <div className="absolute bottom-4 left-0 right-0 text-center">
@@ -163,10 +151,10 @@ export default function CreateStoryPage() {
                                 </div>
                             </div>
 
-                            {/* Image Style */}
+                            {/* 4. Selecting the Art Style for the book cover */}
                             <div className="lg:col-span-5 animate-fade-in-up animation-delay-400">
                                 <label className="block text-2xl font-bold font-fredoka text-gray-800 mb-6">
-                                    4. Cover Book Image
+                                    4. Cover Book Image Style
                                 </label>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     {imageStyles.map((style) => (
@@ -178,18 +166,13 @@ export default function CreateStoryPage() {
                                                 : 'hover:shadow-lg hover:scale-[1.02]'
                                                 }`}
                                         >
-                                            {/* Background Image / Placeholder */}
-                                            {style.image ? (
+                                            {style.image && (
                                                 <Image
                                                     src={style.image}
                                                     alt={style.label}
                                                     fill
                                                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                                                 />
-                                            ) : (
-                                                <div className={`absolute inset-0 bg-gradient-to-br ${style.color || 'from-gray-300 to-gray-400'} transition-transform duration-500 group-hover:scale-110`}>
-
-                                                </div>
                                             )}
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                                             <div className="absolute bottom-4 left-0 right-0 text-center">
@@ -210,7 +193,7 @@ export default function CreateStoryPage() {
                             </div>
                         </div>
 
-                        {/* Generate Button */}
+                        {/* The big Generate Button at the bottom */}
                         <div className="flex justify-end animate-fade-in-up animation-delay-500">
                             <button className="bg-story-gold hover:bg-yellow-400 text-white text-xl font-bold py-4 px-12 rounded-full shadow-xl shadow-yellow-200 hover:shadow-yellow-300 transition-all transform hover:-translate-y-1 active:translate-y-0 glow-hover flex items-center gap-3">
                                 <span>✨</span> Generate Story
@@ -219,6 +202,7 @@ export default function CreateStoryPage() {
                     </div>
                 </SignedIn>
 
+                {/* Section visible ONLY if the user is NOT logged in */}
                 <SignedOut>
                     <div className="max-w-2xl mx-auto text-center py-20 animate-fade-in-up">
                         <div className="bg-white rounded-3xl p-10 shadow-xl border-2 border-purple-50">
@@ -237,6 +221,7 @@ export default function CreateStoryPage() {
                             <p className="text-lg text-gray-600 mb-8 font-poppins">
                                 You need to be signed in to create your own magical stories. It only takes a second to start your adventure!
                             </p>
+                            {/* Shows a popup for the user to sign in */}
                             <SignInButton mode="modal">
                                 <button className="bg-story-purple hover:bg-purple-700 text-white text-lg font-bold py-3 px-8 rounded-full shadow-lg shadow-purple-200 hover:shadow-purple-400 transition-all transform hover:-translate-y-1 active:translate-y-0">
                                     Sign In to Create
