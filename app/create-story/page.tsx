@@ -6,13 +6,24 @@ import Image from 'next/image';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
+import { globalLoader } from '../components/GenerateLoader';
+import { useCredits } from '../context/CreditsProvider';
+
+import { checkStorySubject } from '../utils/contentFilter';
 
 // This is the main page where users customize and create their story
 export default function CreateStoryPage() {
+    const router = useRouter();
+    const { credits, deductCredit, refreshCredits } = useCredits();
+
     // These states keep track of what the user clicks on (Story type, Age, and Art style)
+    const [storySubject, setStorySubject] = useState<string>('');
     const [storyType, setStoryType] = useState<string>('story-book');
     const [ageGroup, setAgeGroup] = useState<string>('3-5');
     const [imageStyle, setImageStyle] = useState<string>('3d-cartoon');
+    const [loading, setLoading] = useState<boolean>(false);
+    const [subjectError, setSubjectError] = useState<string | null>(null);
 
     // These lists define the different choices the user can make
     const storyTypes = [
@@ -33,8 +44,74 @@ export default function CreateStoryPage() {
         { id: 'watercolor', label: 'Watercolor', color: 'from-purple-400 to-fuchsia-500', image: '/images/watercolor-style.jpg' },
     ];
 
+    const handleGenerateStory = async () => {
+        setSubjectError(null);
+
+        if (!storySubject) {
+            setSubjectError('Please enter a subject for your story!');
+            return;
+        }
+
+        // Kid-friendly check
+        const filterResult = checkStorySubject(storySubject);
+        if (!filterResult.isFriendly) {
+            setSubjectError(filterResult.reason || 'Please keep the story subject friendly!');
+            return;
+        }
+
+        // Check if user has enough credits
+        if (credits !== null && credits < 1) {
+            alert('You need at least 1 credit to generate a story. Please buy more credits!');
+            router.push('/buy-credits');
+            return;
+        }
+
+        setLoading(true);
+        globalLoader.show("Crafting your magical story...");
+        try {
+            // Deduct 1 credit before generating
+            const deducted = await deductCredit(`Generated story: ${storySubject}`);
+            if (!deducted) {
+                alert('Insufficient credits! Please buy more credits to continue.');
+                router.push('/buy-credits');
+                return;
+            }
+
+            const response = await fetch('/api/generate-story', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    storySubject,
+                    storyType,
+                    ageGroup,
+                    imageStyle
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('API Error Response:', errorData);
+                throw new Error(errorData.details || errorData.error || 'Failed to generate story');
+            }
+
+            const data = await response.json();
+            router.push(`/view-story/${data.storyId}`);
+
+        } catch (error: any) {
+            console.error('Error:', error);
+            alert('Something went wrong: ' + error.message);
+            // Refresh credits in case deduction happened but generation failed
+            await refreshCredits();
+        } finally {
+            globalLoader.hide();
+            setLoading(false);
+        }
+    };
+
     return (
-        <div className="min-h-screen font-poppins bg-story-lavender">
+        <div className="min-h-screen font-poppins bg-story-lavender text-black">
             <Header />
             <main className="pt-24 pb-20 px-4 sm:px-6 lg:px-8">
 
@@ -55,13 +132,24 @@ export default function CreateStoryPage() {
                         <div className="grid lg:grid-cols-12 gap-8 mb-12">
                             {/* 1. The input box where users type their story idea */}
                             <div className="lg:col-span-5 bg-white rounded-3xl p-8 shadow-xl animate-fade-in-up animation-delay-100 flex flex-col h-full min-h-[400px]">
-                                <label className="block text-2xl font-bold font-fredoka text-gray-800 mb-6">
+                                <label htmlFor="subject" className="block text-2xl font-bold font-fredoka text-gray-800 mb-6">
                                     1. Subject of the Story
                                 </label>
                                 <textarea
-                                    className="w-full h-full p-6 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-story-purple focus:ring-4 focus:ring-purple-100 transition-all text-lg resize-none placeholder-gray-400 outline-none flex-grow"
+                                    id="subject"
+                                    value={storySubject}
+                                    onChange={(e) => {
+                                        setStorySubject(e.target.value);
+                                        if (subjectError) setSubjectError(null);
+                                    }}
+                                    className={`w-full h-full p-6 rounded-2xl bg-gray-50 border-2 transition-all text-lg resize-none placeholder-gray-400 outline-none flex-grow ${subjectError ? 'border-red-300 focus:border-red-400 focus:ring-red-100' : 'border-gray-100 focus:border-story-purple focus:ring-4 focus:ring-purple-100'}`}
                                     placeholder="Write the subject of the story you want to generate..."
                                 ></textarea>
+                                {subjectError && (
+                                    <p className="mt-3 text-red-500 text-sm font-medium animate-shake">
+                                        ⚠️ {subjectError}
+                                    </p>
+                                )}
                             </div>
 
                             {/* 2. Selecting what kind of story it is */}
@@ -193,10 +281,61 @@ export default function CreateStoryPage() {
                             </div>
                         </div>
 
-                        {/* The big Generate Button at the bottom */}
-                        <div className="flex justify-end animate-fade-in-up animation-delay-500">
-                            <button className="bg-story-gold hover:bg-yellow-400 text-white text-xl font-bold py-4 px-12 rounded-full shadow-xl shadow-yellow-200 hover:shadow-yellow-300 transition-all transform hover:-translate-y-1 active:translate-y-0 glow-hover flex items-center gap-3">
-                                <span>✨</span> Generate Story
+                        {/* Credit balance indicator + Generate Button at the bottom */}
+                        <div className="flex items-center justify-between animate-fade-in-up animation-delay-500">
+                            {/* Credit balance info */}
+                            <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2 bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 rounded-full px-5 py-3">
+                                    <div className="relative w-7 h-7">
+                                        <Image
+                                            src="/images/coin.png"
+                                            alt="AI Coin"
+                                            fill
+                                            className="object-contain"
+                                        />
+                                    </div>
+                                    <span className="font-bold text-amber-700 font-fredoka text-lg">
+                                        {credits !== null ? credits : '...'}
+                                    </span>
+                                    <span className="text-amber-600 text-sm">credits left</span>
+                                </div>
+                                {credits !== null && credits < 3 && (
+                                    <Link
+                                        href="/buy-credits"
+                                        className="text-story-purple hover:text-purple-700 font-semibold text-sm underline underline-offset-2"
+                                    >
+                                        Buy more →
+                                    </Link>
+                                )}
+                            </div>
+
+                            <button
+                                onClick={handleGenerateStory}
+                                disabled={loading || (credits !== null && credits < 1)}
+                                className={`bg-story-gold hover:bg-yellow-400 text-white text-xl font-bold py-4 px-12 rounded-full shadow-xl shadow-yellow-200 hover:shadow-yellow-300 transition-all transform hover:-translate-y-1 active:translate-y-0 glow-hover flex items-center gap-3 ${loading || (credits !== null && credits < 1) ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            >
+                                {loading ? (
+                                    <>
+                                        <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        Generating Magic...
+                                    </>
+                                ) : (credits !== null && credits < 1) ? (
+                                    <>
+                                        <span>🔒</span> No Credits
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="relative w-6 h-6">
+                                            <Image
+                                                src="/images/coin.png"
+                                                alt="AI Coin"
+                                                fill
+                                                className="object-contain brightness-0 invert"
+                                            />
+                                        </div>
+                                        <span>Generate Story (1 credit)</span>
+                                    </>
+                                )}
                             </button>
                         </div>
                     </div>

@@ -20,8 +20,8 @@ export default function CTA() {
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
                 <div className="max-w-3xl mx-auto">
                     {/* Bouncing sparkles icon */}
-                    <div className="inline-block mb-6 animate-bounce">
-                        <span className="text-4xl">✨</span>
+                    <div className="inline-block mb-6 animate-bounce"> 
+                        <span className="text-4xl">✨</span> {/* size */}
                     </div>
 
                     <h2 className="text-4xl sm:text-5xl font-fredoka font-bold text-white mb-6 leading-tight drop-shadow-md">
@@ -44,7 +44,7 @@ export default function CTA() {
                 </div>
             </div>
 
-            {/* Tiny floating stars for extra detail */}
+            {/* Tiny floating circle  */}
             <div className="absolute top-20 left-20 w-4 h-4 bg-white rounded-full blur-[2px] animate-sparkle"></div>
             <div className="absolute bottom-20 right-20 w-6 h-6 bg-story-gold rounded-full blur-[3px] animate-sparkle delay-100"></div>
         </section>

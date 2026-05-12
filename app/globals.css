@@ -102,3 +102,23 @@ h6 {
   /* Adds a glowing light effect around each star */
   filter: drop-shadow(0 0 var(--glow-size) var(--color));
 }
+
+/* Custom Animations */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.animate-shake {
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes bounce-short {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.animate-bounce-short {
+  animation: bounce-short 1s ease-in-out infinite;
+}

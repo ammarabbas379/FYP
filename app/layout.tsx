@@ -3,6 +3,8 @@ import { Fredoka, Poppins } from "next/font/google"; // Importing clean and frie
 import { ClerkProvider } from "@clerk/nextjs"; // Import Clerk for user login/account management
 import "./globals.css"; // Import our global styles
 import CursorSparkle from "./components/CursorSparkle"; // The magical sparkle effect that follows the mouse
+import GenerateLoader from "./components/GenerateLoader"; // Global loader component
+import CreditsProvider from "./context/CreditsProvider"; // Credit system provider
 
 // Setting up the "Fredoka" font for headings
 const fredoka = Fredoka({
@@ -40,8 +42,14 @@ export default function RootLayout({
           {/* Add the magical mouse effect here */}
           <CursorSparkle />
 
-          {/* This is where the content of each page will be shown */}
-          {children}
+          {/* Global loader component */}
+          <GenerateLoader />
+
+          {/* Credit system provider — makes credits available everywhere */}
+          <CreditsProvider>
+            {/* This is where the content of each page will be shown */}
+            {children}
+          </CreditsProvider>
         </body>
       </html>
     </ClerkProvider>

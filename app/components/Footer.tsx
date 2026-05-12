@@ -1,14 +1,80 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
+import { useState } from 'react';
+import { useUser, SignInButton } from '@clerk/nextjs';
 
 // This is the Footer section at the very bottom of every page
 export default function Footer() {
+    const { isSignedIn } = useUser();
+    const [email, setEmail] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [status, setStatus] = useState<{ type: 'success' | 'error' | 'info' | null, message: React.ReactNode }>({
+        type: null,
+        message: ''
+    });
+
+    const handleSubscribe = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        // 1. Check if user is logged in
+        if (!isSignedIn) {
+            setStatus({ 
+                type: 'info', 
+                message: (
+                    <span>
+                        Please{' '}
+                        <SignInButton mode="modal">
+                            <button className="underline font-bold hover:text-white transition-colors">login</button>
+                        </SignInButton>
+                        {' '}first to subscribe!
+                    </span>
+                )
+            });
+            return;
+        }
+        
+        // 2. Frontend validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            setStatus({ type: 'error', message: 'Please use a valid format (e.g., name@gmail.com)' });
+            return;
+        }
+
+        setLoading(true);
+        setStatus({ type: null, message: '' });
+
+        try {
+            const response = await fetch('/api/subscribe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setStatus({ type: 'success', message: data.message });
+                setEmail('');
+            } else {
+                setStatus({ type: 'error', message: data.message || 'Failed to subscribe.' });
+            }
+        } catch (error) {
+            setStatus({ type: 'error', message: 'Something went wrong. Please try again.' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <footer className="bg-gradient-to-br from-story-purple to-purple-700 pt-16 pb-8 border-t border-purple-400">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
 
-                    {/* Left Side: Brand Logo and Social Buttons */}
+                    {/*  Brand Logo and Social Buttons */}
                     <div className="col-span-1 md:col-span-2 lg:col-span-1">
                         <Link href="/" className="flex items-center mb-4 group">
                             <div className="relative transform group-hover:scale-105 transition-transform duration-300">
@@ -63,13 +129,13 @@ export default function Footer() {
                         </ul>
                     </div>
 
-                    {/* Support and legal links */}
+                    {/* Support  links */}
                     <div>
                         <h4 className="font-bold text-white mb-6 font-fredoka">Support</h4>
                         <ul className="space-y-3">
                             {['Help Center', 'Terms of Service', 'Privacy Policy', 'FAQs'].map((link) => (
                                 <li key={link}>
-                                    <Link href={link === 'Help Center' ? '/contact-us' : link === 'Terms of Service' ? '/terms' : '#'} className="text-white hover:text-story-gold transition-colors">
+                                    <Link href={link === 'Help Center' ? '/contact-us' : link === 'Terms of Service' ? '/terms' : link === 'Privacy Policy' ? '/privacy-policy' : link === 'FAQs' ? '/faqs' : '#'} className="text-white hover:text-story-gold transition-colors">
                                         {link}
                                     </Link>
                                 </li>
@@ -81,15 +147,34 @@ export default function Footer() {
                     <div>
                         <h4 className="font-bold text-white mb-6 font-fredoka">Subscribe</h4>
                         <p className="text-sm text-white mb-4">Get the latest magical updates!</p>
-                        <form className="flex gap-2">
-                            <input
-                                type="email"
-                                placeholder="Email address"
-                                className="w-full px-4 py-2 rounded-lg border border-purple-200 focus:outline-none focus:border-story-purple focus:ring-1 focus:ring-story-purple text-sm"
-                            />
-                            <button className="bg-story-purple text-white px-4 py-2 rounded-lg font-bold hover:bg-purple-700 transition-colors">
-                                →
-                            </button>
+                        <form onSubmit={handleSubscribe} className="flex flex-col gap-2">
+                            <div className="flex gap-2">
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="Email address"
+                                    disabled={loading}
+                                    required
+                                    className="w-full px-4 py-2 rounded-lg border border-purple-200 focus:outline-none focus:border-story-purple focus:ring-1 focus:ring-story-purple text-sm disabled:opacity-50"
+                                />
+                                <button 
+                                    type="submit"
+                                    disabled={loading}
+                                    className="bg-story-purple text-white px-4 py-2 rounded-lg font-bold hover:bg-purple-700 transition-colors disabled:bg-purple-400"
+                                >
+                                    {loading ? '...' : '→'}
+                                </button>
+                            </div>
+                            {status.message && (
+                                <p className={`text-xs mt-1 font-semibold ${
+                                    status.type === 'success' ? 'text-green-300' : 
+                                    status.type === 'info' ? 'text-story-gold' : 
+                                    'text-red-300'
+                                }`}>
+                                    {status.message}
+                                </p>
+                            )}
                         </form>
                     </div>
                 </div>
