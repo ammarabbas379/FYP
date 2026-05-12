@@ -208,7 +208,7 @@ export default function BookDisplay({ story }: BookDisplayProps) {
                     const pageFlip = new PageFlip(bookRef.current!, {
                         width: 550,
                         height: 733,
-                        size: "stretch",
+                        size: "stretch" as any,
                         minWidth: 315,
                         maxWidth: 800,
                         minHeight: 420,
