@@ -3,14 +3,14 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import Header from '../../components/Header';
+import Footer from '../../components/Footer';
 import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
-import { globalLoader } from '../components/GenerateLoader';
-import { useCredits } from '../context/CreditsProvider';
+import { globalLoader } from '../../components/GenerateLoader';
+import { useCredits } from '../../_features/credits/CreditsProvider';
 
-import { checkStorySubject } from '../utils/contentFilter';
+import { checkStorySubject } from '../../utils/contentFilter';
 
 // This is the main page where users customize and create their story
 export default function CreateStoryPage() {
@@ -242,7 +242,7 @@ export default function CreateStoryPage() {
                             {/* 4. Selecting the Art Style for the book cover */}
                             <div className="lg:col-span-5 animate-fade-in-up animation-delay-400">
                                 <label className="block text-2xl font-bold font-fredoka text-gray-800 mb-6">
-                                    4. Cover Book Image Style
+                                    4. Book Image Style
                                 </label>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     {imageStyles.map((style) => (
@@ -312,7 +312,7 @@ export default function CreateStoryPage() {
                             <button
                                 onClick={handleGenerateStory}
                                 disabled={loading || (credits !== null && credits < 1)}
-                                className={`bg-story-gold hover:bg-yellow-400 text-white text-xl font-bold py-4 px-12 rounded-full shadow-xl shadow-yellow-200 hover:shadow-yellow-300 transition-all transform hover:-translate-y-1 active:translate-y-0 glow-hover flex items-center gap-3 ${loading || (credits !== null && credits < 1) ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                className={`bg-story-purple hover:bg-purple-700 text-white text-xl font-bold py-4 px-12 rounded-full shadow-xl shadow-purple-200 hover:shadow-purple-400 transition-all transform hover:-translate-y-1 active:translate-y-0 glow-hover flex items-center gap-3 ${loading || (credits !== null && credits < 1) ? 'opacity-70 cursor-not-allowed' : ''}`}
                             >
                                 {loading ? (
                                     <>
@@ -325,14 +325,6 @@ export default function CreateStoryPage() {
                                     </>
                                 ) : (
                                     <>
-                                        <div className="relative w-6 h-6">
-                                            <Image
-                                                src="/images/coin.png"
-                                                alt="AI Coin"
-                                                fill
-                                                className="object-contain brightness-0 invert"
-                                            />
-                                        </div>
                                         <span>Generate Story (1 credit)</span>
                                     </>
                                 )}

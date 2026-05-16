@@ -111,13 +111,8 @@ export async function POST(req: Request) {
 
         const storyId = crypto.randomUUID();
 
-        // Determine Cover Image
-        let coverImage = '/images/story-book-cover.jpg';
-        if (storyType === 'bed-story') coverImage = '/images/bed-story.jpg';
-        else if (storyType === 'educational') coverImage = '/images/educational.jpg';
-        else if (ageGroup === '3-5') coverImage = '/images/age-0-2.jpg';
-        else if (ageGroup === '6-8') coverImage = '/images/age-3-5.jpg';
-        else if (ageGroup === '9-12') coverImage = '/images/age-5-8.jpg';
+        // Cover image will be generated on the client side via Replicate
+        let coverImage = null;
 
         // Save to database
         const insertedData = await db.insert(StoryData).values({

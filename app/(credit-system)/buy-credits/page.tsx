@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from 'react';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import Header from '../../components/Header';
+import Footer from '../../components/Footer';
 import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
-import { useCredits } from '../context/CreditsProvider';
+import { useCredits } from '../../_features/credits/CreditsProvider';
 import Image from 'next/image';
 
 // Credit packages available for purchase

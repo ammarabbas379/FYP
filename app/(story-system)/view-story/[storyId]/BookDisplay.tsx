@@ -18,6 +18,7 @@ interface BookDisplayProps {
         imageStyle: string | null;
         output: any;
         coverImage: string | null;
+        coverImagePrompt?: string | null;
     };
 }
 
@@ -37,7 +38,113 @@ export default function BookDisplay({ story }: BookDisplayProps) {
     const latestRequestedIndexRef = useRef(0);
     const prefetchCacheRef = useRef<Record<number, string>>({});
 
+    const [chapterImages, setChapterImages] = useState<Record<number, string>>({});
+    const [generatingImages, setGeneratingImages] = useState<Record<number, boolean>>({});
+
     const storyContent = story.output;
+
+    const [coverImage, setCoverImage] = useState<string | null>(story.coverImage || storyContent?.coverImage || null);
+    const [generatingCover, setGeneratingCover] = useState<boolean>(false);
+
+    // Generate missing cover image
+    useEffect(() => {
+        if (coverImage || generatingCover || !storyContent) return;
+        
+        const generateCover = async () => {
+            setGeneratingCover(true);
+            try {
+                const title = storyContent.title || story.storySubject || 'Story';
+                const basePrompt = story.coverImagePrompt || `Storybook cover for '${title}'.`;
+                const styleInstruction = story.imageStyle ? `A vibrant, cheerful ${story.imageStyle} style.` : `A vibrant, cheerful 3D cartoon style.`;
+                const fullPrompt = `Add text with title "${title}" in bold text for book cover. ${basePrompt} ${styleInstruction}`;
+
+                const res = await fetch('/api/generate-image', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: fullPrompt })
+                });
+
+                const data = await res.json();
+                if (data.success && data.imageUrl) {
+                    setCoverImage(data.imageUrl);
+
+                    // Save to database
+                    await fetch('/api/update-story-image', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            storyId: story.storyId,
+                            isCover: true,
+                            imageUrl: data.imageUrl
+                        })
+                    });
+                }
+            } catch (error) {
+                console.error(`Failed to generate cover image:`, error);
+            } finally {
+                setGeneratingCover(false);
+            }
+        };
+
+        generateCover();
+    }, [coverImage, generatingCover, story.storyId, story.coverImagePrompt, story.imageStyle, story.storySubject, storyContent]);
+
+    // Load initial images from story output
+    useEffect(() => {
+        if (storyContent?.chapters) {
+            const initialImages: Record<number, string> = {};
+            storyContent.chapters.forEach((c: any, index: number) => {
+                if (c.image && c.image.startsWith('data:image')) initialImages[index] = c.image;
+            });
+            setChapterImages(initialImages);
+        }
+    }, [storyContent]);
+
+    // Generate missing images
+    useEffect(() => {
+        if (!storyContent?.chapters) return;
+
+        storyContent.chapters.forEach(async (chapter: any, index: number) => {
+            // Only skip if we already have a generated image in state OR a permanent one in the data
+            const hasPermanentImage = chapter.image && chapter.image.startsWith('data:image');
+            if (chapterImages[index] || generatingImages[index] || hasPermanentImage) return;
+
+            setGeneratingImages(prev => ({ ...prev, [index]: true }));
+
+            try {
+                // Determine the prompt style
+                const baseSubject = story.storySubject ? `Story about ${story.storySubject}. ` : '';
+                const styleInstruction = story.imageStyle ? `Style: ${story.imageStyle}, children's book illustration.` : `High quality children's book illustration.`;
+                const fullPrompt = `${baseSubject}${chapter.chapterDescription}. ${styleInstruction} Ensure consistent character design, vibrant colors, masterpieces.`;
+
+                const res = await fetch('/api/generate-image', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: fullPrompt })
+                });
+
+                const data = await res.json();
+                if (data.success && data.imageUrl) {
+                    setChapterImages(prev => ({ ...prev, [index]: data.imageUrl }));
+
+                    // Save to database
+                    await fetch('/api/update-story-image', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            storyId: story.storyId,
+                            chapterIndex: index,
+                            imageUrl: data.imageUrl
+                        })
+                    });
+                }
+            } catch (error) {
+                console.error(`Failed to generate image for chapter ${index}:`, error);
+            } finally {
+                setGeneratingImages(prev => ({ ...prev, [index]: false }));
+            }
+        });
+    }, [storyContent, chapterImages, generatingImages, story.storyId, story.imageStyle, story.storySubject]);
 
     const playlistTexts = useMemo(() => {
         if (!storyContent) return [];
@@ -275,8 +382,39 @@ export default function BookDisplay({ story }: BookDisplayProps) {
                         style={{ opacity: pageFlipEnabled ? 1 : 0 }}
                     >
                         {/* 1. FRONT COVER */}
-                        <div className="page-content bg-white" data-density="hard">
-                            {/* Blank cover */}
+                        <div className="page-content bg-story-purple text-white flex flex-col items-center justify-center relative overflow-hidden" data-density="hard">
+                            {coverImage ? (
+                                <img
+                                    src={coverImage}
+                                    alt="Story Cover"
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : generatingCover ? (
+                                <div className="flex flex-col items-center justify-center p-12 text-center h-full">
+                                    <div className="absolute inset-0 opacity-10 bg-[url('/images/magic-pattern.png')] bg-repeat bg-center pointer-events-none"></div>
+                                    <div className="z-10 flex flex-col items-center gap-4">
+                                        <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        <span className="text-xl font-medium font-fredoka animate-pulse">Designing your magic cover...</span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center p-12 text-center h-full w-full">
+                                    <div className="absolute inset-0 opacity-10 bg-[url('/images/magic-pattern.png')] bg-repeat bg-center pointer-events-none"></div>
+                                    <div className="z-10 flex flex-col items-center w-full">
+                                        <div className="text-6xl mb-6">📖</div>
+                                        <h1 className="text-3xl sm:text-4xl font-fredoka font-bold text-white leading-tight mb-4">
+                                            {storyContent?.title || 'A Magical Tale'}
+                                        </h1>
+                                        <div className="w-16 h-1 bg-story-gold mx-auto rounded-full mb-6"></div>
+                                        <p className="text-xl opacity-80 mb-10 max-w-xs mx-auto leading-relaxed italic">
+                                            A {story.storyType?.replace('-', ' ') || 'magical'} story for ages {story.ageGroup}
+                                        </p>
+                                        <p className="text-sm font-bold uppercase tracking-[0.3em] text-story-gold">
+                                            StoryNest AI
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* 2. CHAPTERS: IMAGE LEFT, TEXT RIGHT */}
@@ -285,12 +423,25 @@ export default function BookDisplay({ story }: BookDisplayProps) {
                                 {/* LEFT PAGE: IMAGE */}
                                 <div className="page-content bg-white flex flex-col items-center justify-center p-8 border-r border-gray-100 shadow-inner">
                                     <div className="absolute inset-0 bg-[#F3F4F6] opacity-30 pointer-events-none"></div>
-                                    <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-lg border-4 border-white">
-                                        <img
-                                            src="/images/story-placeholder.png"
-                                            alt={chapter.chapterTitle}
-                                            className="w-full h-full object-cover"
-                                        />
+                                    <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-lg border-4 border-white flex items-center justify-center bg-gray-100">
+                                        {chapterImages[index] ? (
+                                            <img
+                                                src={chapterImages[index]}
+                                                alt={chapter.chapterTitle}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : generatingImages[index] ? (
+                                            <div className="flex flex-col items-center gap-3">
+                                                <div className="w-8 h-8 border-4 border-story-purple border-t-transparent rounded-full animate-spin"></div>
+                                                <span className="text-sm font-medium text-story-purple animate-pulse">Drawing magic...</span>
+                                            </div>
+                                        ) : (
+                                            <img
+                                                src="/images/story-placeholder.png"
+                                                alt={chapter.chapterTitle}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        )}
                                         <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-6">
                                             <p className="text-white text-xs font-medium italic leading-snug">
                                                 {chapter.chapterDescription}

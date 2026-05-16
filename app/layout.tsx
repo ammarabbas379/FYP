@@ -4,7 +4,7 @@ import { ClerkProvider } from "@clerk/nextjs"; // Import Clerk for user login/ac
 import "./globals.css"; // Import our global styles
 import CursorSparkle from "./components/CursorSparkle"; // The magical sparkle effect that follows the mouse
 import GenerateLoader from "./components/GenerateLoader"; // Global loader component
-import CreditsProvider from "./context/CreditsProvider"; // Credit system provider
+import CreditsProvider from "./_features/credits/CreditsProvider"; // Credit system provider
 
 // Setting up the "Fredoka" font for headings
 const fredoka = Fredoka({

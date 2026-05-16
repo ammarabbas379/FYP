@@ -4,7 +4,7 @@ import Link from 'next/link'; // For jumping to different pages
 import Image from 'next/image'; // For high-quality images
 import { useState, useEffect } from 'react'; // For keeping track of things (like if the user scrolled)
 import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'; // User login tools
-import { useCredits } from '../context/CreditsProvider'; // Credit system
+import { useCredits } from '../_features/credits/CreditsProvider'; // Credit system
 
 export default function Header() {
     // These states keep track of whether the page is scrolled and if the mobile menu is open
@@ -25,7 +25,7 @@ export default function Header() {
     const navItems = [
         { label: 'Home', href: '/' },
         { label: 'Create Story', href: '/create-story' },
-        { label: 'Explore Stories', href: '#' },
+        { label: 'Explore Stories', href: '/explore' },
         { label: 'Contact Us', href: '/contact-us' },
     ];
 
