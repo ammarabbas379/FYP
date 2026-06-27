@@ -40,6 +40,6 @@ export const CreditTransactions = pgTable('creditTransactions', {
     amount: integer('amount').notNull(),                 // Positive for purchases, negative for usage
     creditsAfter: integer('creditsAfter').notNull(),     // Balance after this transaction
     description: text('description'),                    // e.g. "Purchased 10 credits" or "Generated story: ..."
-    paypalOrderId: varchar('paypalOrderId'),             // PayPal order ID for purchases
+    paymentId: varchar('paymentId'),                  // Stripe Session ID or PayPal Order ID
     createdAt: timestamp('createdAt').defaultNow(),
 });

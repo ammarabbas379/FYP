@@ -28,14 +28,17 @@ export async function POST(req: Request) {
             // You can add more parameters here like width, height, num_outputs etc.
         };
 
-        const output: any = await replicate.run("black-forest-labs/flux-schnell", { input });
+        const output: any = await replicate.run("black-forest-labs/flux-2-pro", { input });
 
         // The output is typically an array of streams or URLs depending on the model
         // Flux models on Replicate return an array of image URLs or WebP data.
         
         // Sometimes it returns stream objects with .url(), sometimes just raw URLs.
         let imageUrl = '';
-        if (Array.isArray(output) && output.length > 0) {
+        if (output && typeof output.url === 'function') {
+            // Handle cases like flux-2-pro where the output is directly a FileOutput object
+            imageUrl = output.url().toString();
+        } else if (Array.isArray(output) && output.length > 0) {
             // Check if it's an object with a url() function
             if (typeof output[0] === 'object' && typeof output[0].url === 'function') {
                 imageUrl = output[0].url().toString();
@@ -43,7 +46,6 @@ export async function POST(req: Request) {
                 imageUrl = output[0];
             } else if (typeof output[0] === 'object' && output[0] instanceof ReadableStream) {
                  // In newer replicate SDKs it might return streams
-                // But the user's snippet uses output[0].url() or writing to disk
                  const streamObj = output[0] as any;
                  imageUrl = streamObj.url ? streamObj.url().toString() : streamObj;
             }
@@ -54,6 +56,8 @@ export async function POST(req: Request) {
              console.log('Replicate output:', output);
              if(Array.isArray(output) && typeof output[0] === 'object' && 'url' in output[0]) {
                  imageUrl = (output[0] as any).url;
+             } else if (output && typeof output === 'object' && 'url' in output) {
+                 imageUrl = (output as any).url;
              } else {
                  return NextResponse.json({ error: 'Failed to extract image URL from Replicate response', output }, { status: 500 });
              }

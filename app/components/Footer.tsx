@@ -97,7 +97,13 @@ export default function Footer() {
                             {['facebook', 'instagram', 'youtube'].map((social) => (
                                 <a
                                     key={social}
-                                    href="#"
+                                    href={
+                                        social === 'facebook' ? 'https://www.facebook.com/profile.php?id=61591690550142' :
+                                        social === 'instagram' ? 'https://www.instagram.com/storyainest/' : 
+                                        social === 'youtube' ? 'https://www.youtube.com/@StoryNest_Ai-fyp' : '#'
+                                    }
+                                    target={social === 'facebook' || social === 'instagram' || social === 'youtube' ? '_blank' : undefined}
+                                    rel={social === 'facebook' || social === 'instagram' || social === 'youtube' ? 'noopener noreferrer' : undefined}
                                     className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-story-purple shadow-sm hover:shadow-md hover:bg-story-purple hover:text-white transition-all duration-300 transform hover:-translate-y-1"
                                 >
                                     <span className="sr-only">{social}</span>

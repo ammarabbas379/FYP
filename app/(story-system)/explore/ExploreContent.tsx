@@ -97,12 +97,18 @@ export default function ExploreContent({ allStories, userEmail }: ExploreContent
                                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                             />
                                         ) : (
-                                            <div className="text-center p-4 z-10">
-                                                <span className="text-6xl mb-2 block">📖</span>
-                                                <p className="font-fredoka text-purple-800 font-bold opacity-70">
-                                                    {story.storyType === 'bed-story' ? 'Bedtime Story' : 
-                                                     story.storyType === 'educational' ? 'Educational' : 'Story Book'}
-                                                </p>
+                                            <div className="absolute inset-0 bg-story-purple flex flex-col items-center justify-center p-6 text-center">
+                                                <div className="absolute inset-0 opacity-10 bg-[url('/images/magic-pattern.png')] bg-repeat bg-center pointer-events-none"></div>
+                                                <div className="z-10 flex flex-col items-center w-full">
+                                                    <div className="text-4xl mb-3">📖</div>
+                                                    <h3 className="text-lg font-fredoka font-bold text-white leading-tight mb-2 line-clamp-2">
+                                                        {story.output?.title || story.storySubject || 'Untitled Story'}
+                                                    </h3>
+                                                    <div className="w-8 h-0.5 bg-story-gold mx-auto rounded-full mb-2"></div>
+                                                    <p className="text-xs text-story-gold font-bold uppercase tracking-wider">
+                                                        StoryNest AI
+                                                    </p>
+                                                </div>
                                             </div>
                                         )}
                                         

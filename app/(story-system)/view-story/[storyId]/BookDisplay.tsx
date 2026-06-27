@@ -177,22 +177,17 @@ export default function BookDisplay({ story }: BookDisplayProps) {
     }, []);
 
     const generateAudioForText = async (text: string) => {
-        const voiceId = "21m00Tcm4TlvDq8ikWAM"; // Rachel voice
-        const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+        const response = await fetch(`/api/generate-audio`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'xi-api-key': '9a7db35a2b769ac22a7ed8ce855d3c8dbd47e5900c5148d980f0bd5aff048ffa',
             },
-            body: JSON.stringify({
-                text: text.slice(0, 5000), // Safety clip
-                model_id: 'eleven_multilingual_v2',
-            }),
+            body: JSON.stringify({ text }),
         });
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            console.error("ElevenLabs API Error:", errorData);
+            console.error("Audio API Error:", errorData);
             throw new Error("Failed to generate audio.");
         }
 
