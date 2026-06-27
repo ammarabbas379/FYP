@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
@@ -45,7 +45,7 @@ const CREDIT_PACKAGES = [
     },
 ];
 
-export default function BuyCreditsPage() {
+function BuyCreditsContent() {
     const { credits, refreshCredits } = useCredits();
     const searchParams = useSearchParams();
     const [selectedPackage, setSelectedPackage] = useState<string>('popular');
@@ -332,5 +332,17 @@ export default function BuyCreditsPage() {
             </main>
             <Footer />
         </div>
+    );
+}
+
+export default function BuyCreditsPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen font-poppins bg-story-lavender text-black flex items-center justify-center">
+                <div className="w-12 h-12 border-4 border-story-purple border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        }>
+            <BuyCreditsContent />
+        </Suspense>
     );
 }
