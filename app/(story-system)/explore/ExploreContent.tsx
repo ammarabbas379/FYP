@@ -176,14 +176,26 @@ export default function ExploreContent({ allStories, userEmail }: ExploreContent
                 </div>
                 </SignedIn>
                 <SignedOut>
-                    <div className="flex items-center justify-center py-20 min-h-[50vh]">
-                        <div className="text-center bg-white p-12 rounded-[40px] shadow-2xl border-2 border-purple-50 max-w-md mx-auto">
-                            <div className="text-7xl mb-6 animate-float">🧙‍♂️</div>
-                            <h2 className="text-3xl font-bold font-fredoka text-gray-900 mb-4">Magic Awaits!</h2>
-                            <p className="text-gray-600 mb-8 text-lg">Please sign in to explore magical stories from the community and revisit your own adventures.</p>
+                    <div className="max-w-2xl mx-auto text-center py-20 animate-fade-in-up">
+                        <div className="bg-white rounded-3xl p-10 shadow-xl border-2 border-purple-50">
+                            <div className="flex justify-center mb-6 animate-float-slow">
+                                <Image
+                                    src="/images/magic-illustration.png"
+                                    alt="Join the magic"
+                                    width={180}
+                                    height={180}
+                                    className="mix-blend-multiply"
+                                />
+                            </div>
+                            <h2 className="text-3xl font-bold font-fredoka text-gray-900 mb-4">
+                                Join the Magic! ✨
+                            </h2>
+                            <p className="text-lg text-gray-600 mb-8 font-poppins">
+                                You need to be signed in to explore magical stories from the community and revisit your own adventures!
+                            </p>
                             <SignInButton mode="modal">
-                                <button className="w-full bg-story-purple hover:bg-purple-700 text-white font-bold py-4 px-8 rounded-2xl shadow-xl shadow-purple-100 transition-all transform hover:scale-105 active:scale-95 text-lg">
-                                    Sign In to Explore ✨
+                                <button className="bg-story-purple hover:bg-purple-700 text-white text-lg font-bold py-3 px-8 rounded-full shadow-lg shadow-purple-200 hover:shadow-purple-400 transition-all transform hover:-translate-y-1 active:translate-y-0">
+                                    Sign In to Explore
                                 </button>
                             </SignInButton>
                         </div>
