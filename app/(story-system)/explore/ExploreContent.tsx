@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
+import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
 
 interface Story {
     id: number;
@@ -39,6 +40,7 @@ export default function ExploreContent({ allStories, userEmail }: ExploreContent
             <Header />
             
             <main className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+                <SignedIn>
                 <div className="max-w-7xl mx-auto">
                     
                     {/* Header Section */}
@@ -172,6 +174,21 @@ export default function ExploreContent({ allStories, userEmail }: ExploreContent
                         </div>
                     )}
                 </div>
+                </SignedIn>
+                <SignedOut>
+                    <div className="flex items-center justify-center py-20 min-h-[50vh]">
+                        <div className="text-center bg-white p-12 rounded-[40px] shadow-2xl border-2 border-purple-50 max-w-md mx-auto">
+                            <div className="text-7xl mb-6 animate-float">🧙‍♂️</div>
+                            <h2 className="text-3xl font-bold font-fredoka text-gray-900 mb-4">Magic Awaits!</h2>
+                            <p className="text-gray-600 mb-8 text-lg">Please sign in to explore magical stories from the community and revisit your own adventures.</p>
+                            <SignInButton mode="modal">
+                                <button className="w-full bg-story-purple hover:bg-purple-700 text-white font-bold py-4 px-8 rounded-2xl shadow-xl shadow-purple-100 transition-all transform hover:scale-105 active:scale-95 text-lg">
+                                    Sign In to Explore ✨
+                                </button>
+                            </SignInButton>
+                        </div>
+                    </div>
+                </SignedOut>
             </main>
             
             <Footer />
