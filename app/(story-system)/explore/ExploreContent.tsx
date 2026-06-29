@@ -14,7 +14,7 @@ interface Story {
     storyType: string | null;
     ageGroup: string | null;
     imageStyle: string | null;
-    output: any;
+    title?: string | null;
     coverImage: string | null;
     userEmail: string | null;
     userName: string | null;
@@ -92,10 +92,10 @@ export default function ExploreContent({ allStories, userEmail }: ExploreContent
                                 >
                                     {/* Cover Image Placeholder or Actual Image */}
                                     <div className="relative aspect-[4/3] bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center overflow-hidden">
-                                        {(story.coverImage || story.output?.coverImage) ? (
+                                        {story.coverImage ? (
                                             <img 
-                                                src={story.coverImage || story.output?.coverImage} 
-                                                alt={story.output?.title || 'Story Cover'} 
+                                                src={story.coverImage} 
+                                                alt={story.title || 'Story Cover'} 
                                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                             />
                                         ) : (
@@ -104,7 +104,7 @@ export default function ExploreContent({ allStories, userEmail }: ExploreContent
                                                 <div className="z-10 flex flex-col items-center w-full">
                                                     <div className="text-4xl mb-3">📖</div>
                                                     <h3 className="text-lg font-fredoka font-bold text-white leading-tight mb-2 line-clamp-2">
-                                                        {story.output?.title || story.storySubject || 'Untitled Story'}
+                                                        {story.title || story.storySubject || 'Untitled Story'}
                                                     </h3>
                                                     <div className="w-8 h-0.5 bg-story-gold mx-auto rounded-full mb-2"></div>
                                                     <p className="text-xs text-story-gold font-bold uppercase tracking-wider">
@@ -121,7 +121,7 @@ export default function ExploreContent({ allStories, userEmail }: ExploreContent
                                     {/* Content Info */}
                                     <div className="p-6 flex flex-col flex-grow">
                                         <h3 className="font-fredoka text-xl font-bold text-gray-900 mb-2 line-clamp-2">
-                                            {story.output?.title || story.storySubject || 'Untitled Story'}
+                                            {story.title || story.storySubject || 'Untitled Story'}
                                         </h3>
                                         
                                         <div className="flex flex-wrap gap-2 mb-4">
