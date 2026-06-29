@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Header from '@/app/components/Header';
@@ -29,11 +29,83 @@ interface ExploreContentProps {
 
 export default function ExploreContent({ allStories, userEmail }: ExploreContentProps) {
     const [activeTab, setActiveTab] = useState<'all' | 'my'>('all');
+    const [stories, setStories] = useState<Story[]>(allStories);
+    const [offset, setOffset] = useState<number>(allStories.length);
+    const [hasMore, setHasMore] = useState<boolean>(allStories.length >= 8);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const observerTarget = useRef<HTMLDivElement>(null);
 
-    // Filter stories based on active tab
-    const displayStories = activeTab === 'all' 
-        ? allStories 
-        : allStories.filter(story => story.userEmail === userEmail);
+    const fetchStories = useCallback(async (tab: 'all' | 'my', currentOffset: number) => {
+        if (isLoading) return;
+        setIsLoading(true);
+        try {
+            const url = new URL(window.location.origin + '/api/get-stories');
+            url.searchParams.set('offset', currentOffset.toString());
+            url.searchParams.set('limit', '8');
+            if (tab === 'my' && userEmail) {
+                url.searchParams.set('email', userEmail);
+            }
+            
+            const res = await fetch(url.toString());
+            const data = await res.json();
+            
+            if (data.success && data.stories) {
+                if (currentOffset === 0) {
+                    setStories(data.stories);
+                } else {
+                    setStories(prev => {
+                        // Avoid duplicates
+                        const newStories = data.stories.filter((s: Story) => !prev.some(p => p.id === s.id));
+                        return [...prev, ...newStories];
+                    });
+                }
+                setOffset(currentOffset + data.stories.length);
+                if (data.stories.length < 8) {
+                    setHasMore(false);
+                } else {
+                    setHasMore(true);
+                }
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [isLoading, userEmail]);
+
+    // Handle Tab Switch
+    useEffect(() => {
+        if (activeTab === 'all') {
+            setStories(allStories);
+            setOffset(allStories.length);
+            setHasMore(allStories.length >= 8);
+        } else {
+            setStories([]);
+            setHasMore(true);
+            fetchStories('my', 0);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeTab, allStories]);
+
+    // Infinite Scroll Observer
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            entries => {
+                if (entries[0].isIntersecting && hasMore && !isLoading) {
+                    fetchStories(activeTab, offset);
+                }
+            },
+            { threshold: 0.1, rootMargin: '400px' } // Trigger earlier before hitting bottom
+        );
+
+        if (observerTarget.current) {
+            observer.observe(observerTarget.current);
+        }
+
+        return () => observer.disconnect();
+    }, [hasMore, isLoading, activeTab, offset, fetchStories]);
+
+    const displayStories = stories;
 
     return (
         <div className="min-h-screen font-poppins bg-story-lavender text-black">
@@ -83,6 +155,7 @@ export default function ExploreContent({ allStories, userEmail }: ExploreContent
 
                     {/* Stories Grid */}
                     {displayStories.length > 0 ? (
+                        <>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 animate-fade-in-up animation-delay-200">
                             {displayStories.map((story) => (
                                 <Link 
@@ -154,6 +227,12 @@ export default function ExploreContent({ allStories, userEmail }: ExploreContent
                                 </Link>
                             ))}
                         </div>
+                        {hasMore && (
+                            <div ref={observerTarget} className="flex justify-center items-center py-10 w-full col-span-full">
+                                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-story-purple"></div>
+                            </div>
+                        )}
+                        </>
                     ) : (
                         <div className="text-center py-20 bg-white rounded-3xl shadow-md border border-gray-100">
                             <span className="text-6xl block mb-4">📭</span>

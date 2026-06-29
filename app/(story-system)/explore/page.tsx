@@ -22,7 +22,7 @@ export default async function ExplorePage() {
         createdAt: StoryData.createdAt,
         coverImage: sql<string>`COALESCE(${StoryData.coverImage}, ${StoryData.output}->>'coverImage')`.as('coverImage'),
         title: sql<string>`${StoryData.output}->>'title'`.as('title'),
-    }).from(StoryData).orderBy(desc(StoryData.createdAt)).limit(100);
+    }).from(StoryData).orderBy(desc(StoryData.createdAt)).limit(8);
 
     return <ExploreContent allStories={allStories} userEmail={userEmail} />;
 }
