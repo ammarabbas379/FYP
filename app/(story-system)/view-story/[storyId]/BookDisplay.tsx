@@ -30,13 +30,12 @@ export default function BookDisplay({ story }: BookDisplayProps) {
     // Audio State
     const [audioState, setAudioState] = useState<'idle' | 'loading' | 'playing' | 'paused' | 'error'>('idle');
     const [audioErrorMsg, setAudioErrorMsg] = useState<string>('');
-    const audioRef = useRef<HTMLAudioElement | null>(null);
+    const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
     const audioStopRef = useRef<boolean>(true);
 
     // Auto Page Turn Tracking
     const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
     const latestRequestedIndexRef = useRef(0);
-    const prefetchCacheRef = useRef<Record<number, string>>({});
 
     const [chapterImages, setChapterImages] = useState<Record<number, string>>({});
     const [generatingImages, setGeneratingImages] = useState<Record<number, boolean>>({});
@@ -162,93 +161,109 @@ export default function BookDisplay({ story }: BookDisplayProps) {
         return texts;
     }, [storyContent]);
 
+    // Cleanup: cancel speech on unmount
     useEffect(() => {
         return () => {
             audioStopRef.current = true;
-            if (audioRef.current) {
-                audioRef.current.pause();
-                audioRef.current.src = "";
-                audioRef.current = null;
-            }
-            Object.values(prefetchCacheRef.current).forEach(url => {
-                if (url.startsWith('blob:')) URL.revokeObjectURL(url);
-            });
+            window.speechSynthesis?.cancel();
+            utteranceRef.current = null;
         };
     }, []);
 
-    const generateAudioForText = async (text: string) => {
-        const response = await fetch(`/api/generate-audio`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ text }),
-        });
+    /** Pick the best available female voice, falling back to the first English voice then the default. */
+    const getFemaleVoice = (): SpeechSynthesisVoice | null => {
+        if (typeof window === 'undefined') return null;
+        const voices = window.speechSynthesis.getVoices();
+        if (!voices.length) return null;
 
-        if (!response.ok) {
-            const errorData = await response.text();
-            console.error("ElevenLabs API Error:", errorData);
-            throw new Error("Failed to generate audio.");
-        }
+        const femaleKeywords = ['female', 'woman', 'girl', 'zira', 'samantha', 'victoria',
+            'google uk english female', 'google us english', 'fiona', 'moira', 'tessa',
+            'karen', 'veena', 'nicky'];
 
-        const blob = await response.blob();
-        return URL.createObjectURL(blob);
+        // 1. Prefer a voice whose name explicitly signals female
+        const byName = voices.find(v =>
+            femaleKeywords.some(k => v.name.toLowerCase().includes(k))
+        );
+        if (byName) return byName;
+
+        // 2. Fall back to first en-US / en-GB voice
+        const english = voices.find(v => v.lang.startsWith('en'));
+        if (english) return english;
+
+        return voices[0] ?? null;
     };
 
-    const playChunk = async (indexToPlay: number) => {
+    const playChunk = (indexToPlay: number) => {
         latestRequestedIndexRef.current = indexToPlay;
         audioStopRef.current = false;
 
         try {
-            if (audioRef.current) {
-                audioRef.current.pause();
-            }
+            // Cancel any in-progress speech
+            window.speechSynthesis.cancel();
+            utteranceRef.current = null;
 
             setAudioState('loading');
             setAudioErrorMsg('');
 
-            let url = prefetchCacheRef.current[indexToPlay];
-            if (!url) {
-                url = await generateAudioForText(playlistTexts[indexToPlay]);
-                prefetchCacheRef.current[indexToPlay] = url;
-            }
-
-            if (latestRequestedIndexRef.current !== indexToPlay) return;
             if (audioStopRef.current) return;
 
-            const audio = new Audio(url);
-            audioRef.current = audio;
+            const text = playlistTexts[indexToPlay];
+            const utterance = new SpeechSynthesisUtterance(text);
+            utteranceRef.current = utterance;
 
-            audio.onended = () => {
+            // Voice settings for a pleasant female storyteller
+            utterance.rate = 0.88;   // slightly slower for storytelling
+            utterance.pitch = 1.1;   // slightly higher = more feminine
+            utterance.volume = 1.0;
+
+            // Assign voice — voices may load async on first call
+            const assignVoice = () => {
+                const voice = getFemaleVoice();
+                if (voice) utterance.voice = voice;
+            };
+
+            assignVoice();
+            // If voices weren't ready yet, try again after they load
+            if (!utterance.voice) {
+                window.speechSynthesis.onvoiceschanged = () => {
+                    assignVoice();
+                    window.speechSynthesis.onvoiceschanged = null;
+                };
+            }
+
+            utterance.onstart = () => {
+                if (!audioStopRef.current) setAudioState('playing');
+            };
+
+            utterance.onend = () => {
                 if (audioStopRef.current) return;
+                utteranceRef.current = null;
                 if (indexToPlay < playlistTexts.length - 1) {
                     const targetPage = indexToPlay === 0 ? 1 : (indexToPlay * 2 + 1);
-                    // This page flip triggers the on('flip') event, progressing the loop automatically!
                     pageFlipRef.current?.flip(targetPage);
                 } else {
                     setAudioState('idle');
                 }
             };
 
-            audio.onerror = () => {
+            utterance.onerror = (e) => {
+                // 'interrupted' fires when we intentionally cancel — ignore it
+                if (e.error === 'interrupted' || e.error === 'canceled') return;
                 if (!audioStopRef.current) {
                     setAudioState('error');
-                    setAudioErrorMsg('Failed to play audio');
+                    setAudioErrorMsg('Speech synthesis failed: ' + e.error);
                 }
             };
 
-            await audio.play();
-            setAudioState('playing');
+            window.speechSynthesis.speak(utterance);
 
-            // Prefetch next chunk
-            if (indexToPlay < playlistTexts.length - 1) {
-                const nextIndex = indexToPlay + 1;
-                if (!prefetchCacheRef.current[nextIndex]) {
-                    generateAudioForText(playlistTexts[nextIndex]).then(nUrl => {
-                        prefetchCacheRef.current[nextIndex] = nUrl;
-                    }).catch(console.error);
+            // Safari/Chrome sometimes stall; a small delay then set playing if already started
+            setTimeout(() => {
+                if (!audioStopRef.current && audioState !== 'playing') {
+                    setAudioState('playing');
                 }
-            }
+            }, 300);
+
         } catch (error: any) {
             if (!audioStopRef.current) {
                 setAudioState('error');
@@ -266,10 +281,8 @@ export default function BookDisplay({ story }: BookDisplayProps) {
             // If they manually flip while paused, reset to idle so they can press play fresh on the new page
             setAudioState('idle');
             audioStopRef.current = true;
-            if (audioRef.current) {
-                audioRef.current.pause();
-                audioRef.current = null;
-            }
+            window.speechSynthesis.cancel();
+            utteranceRef.current = null;
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentAudioIndex]);
@@ -284,19 +297,22 @@ export default function BookDisplay({ story }: BookDisplayProps) {
         if (audioState === 'loading') return;
 
         if (audioState === 'playing') {
+            // Pause via speechSynthesis
             audioStopRef.current = true;
-            audioRef.current?.pause();
+            window.speechSynthesis.pause();
             setAudioState('paused');
             return;
         }
 
-        if (audioState === 'paused' && audioRef.current) {
+        if (audioState === 'paused') {
+            // Resume from where we left off
             audioStopRef.current = false;
-            audioRef.current.play().then(() => setAudioState('playing')).catch(() => setAudioState('error'));
+            window.speechSynthesis.resume();
+            setAudioState('playing');
             return;
         }
 
-        // Resumes exactly on the current chunk if idle/error
+        // Start fresh on the current chunk if idle/error
         playChunk(currentAudioIndex);
     };
 
